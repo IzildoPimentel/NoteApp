@@ -3,7 +3,7 @@ package com.example.noteapp.ui.tasks
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteapp.R
@@ -12,25 +12,20 @@ import com.example.noteapp.databinding.NoteListBinding
 
 class NoteFragment : Fragment(R.layout.note_list) {
 
-    private var noteList: ArrayList<String> = arrayListOf()
-    private lateinit var noteViewModel: NoteViewModel
+    private val noteViewModel: NoteViewModel by viewModels()
 
     // Run this code when view is ready
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         // Get the noteList from the viewModel
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            noteViewModel.noteList.collect {
-                noteList = noteViewModel.noteList
-            }
-        }
+        // noteList = noteViewModel.noteList
 
         // Bind noteFragment view for faster access
         val binding = NoteListBinding.bind(view)
 
         // Parse the noteList into the adapter
-        val noteAdapter = NoteListAdapter(noteList)
+        val noteAdapter = NoteListAdapter()
 
         binding.apply {
             noteListView.apply {
@@ -39,6 +34,12 @@ class NoteFragment : Fragment(R.layout.note_list) {
                 setHasFixedSize(true)
             }
         }
+
+        // Observe changes in database
+        noteViewModel.noteList.observe(viewLifecycleOwner) {
+            noteAdapter.submitList(it)
+        }
+
 
         binding.fabAddTask.setOnClickListener {
             // Go to the EditNote fragment

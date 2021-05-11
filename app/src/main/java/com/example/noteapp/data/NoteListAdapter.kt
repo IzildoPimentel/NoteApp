@@ -1,32 +1,22 @@
 package com.example.noteapp.data
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.noteapp.R
+import com.example.noteapp.databinding.NoteItemBinding
 
-class NoteListAdapter(private var noteList: ArrayList<String> = arrayListOf()) : RecyclerView.Adapter<NoteListAdapter.ViewHolder>() {
-
-    /**
-     * Provide a reference to the type of views that you are using
-     * (custom ViewHolder).
-     */
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val note: TextView = view.findViewById(R.id.note_text)
-    }
+class NoteListAdapter : ListAdapter<Note, NoteListAdapter.NoteViewHolder>(DiffCallback()) {
 
     /**
      * Create new views (invoked by the layout manager)
      * Reference the the view of the viewlist
      * Create a new view, which defines the UI of the list item
-    */
-    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int) : ViewHolder {
-        val view = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.note_item, viewGroup, false)
-
-        return ViewHolder(view)
+     */
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
+        val binding = NoteItemBinding.inflate(LayoutInflater.from(parent.context), parent,false)
+        return NoteViewHolder(binding)
     }
 
     /**
@@ -34,10 +24,29 @@ class NoteListAdapter(private var noteList: ArrayList<String> = arrayListOf()) :
      * Get element from your dataset at this position and replace the,
      * contents of the view with that element
      * */
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.note.text = noteList[position]
+    override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
+        val currentItem = getItem(position)
+        holder.bind(currentItem)
     }
 
-    // Return the size of your dataSet (invoked by the layout manager)
-    override fun getItemCount() = noteList.size
+    /**
+     * Provide a reference to the type of views that you are using
+     * (custom ViewHolder).
+     */
+    class NoteViewHolder(private val binding: NoteItemBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(note: Note) {
+            binding.apply {
+                noteText.text = note.toString()
+            }
+        }
+    }
+
+    class DiffCallback : DiffUtil.ItemCallback<Note>() {
+        override fun areItemsTheSame(oldItem: Note, newItem: Note) =
+            oldItem.id == newItem.id
+
+        override fun areContentsTheSame(oldItem: Note, newItem: Note) =
+            oldItem == newItem
+    }
 }
